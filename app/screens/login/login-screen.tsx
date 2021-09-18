@@ -1,13 +1,13 @@
 import React, { useState } from "react"
-import { observer } from "mobx-react-lite"
 import { Alert, StyleSheet } from "react-native"
 import database from "@react-native-firebase/database"
 
 import { Button, Screen, Text } from "../../components"
 import { color } from "../../theme"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "../../services/firebase"
-import { RequestModel, TableModel, useStores, WorkspaceModel } from "../../models"
 import { LoadingModal } from "../../components/loading-modal/loading-modal"
+import { loginUser, Request, Table } from "../../models/features/settings/settingsSlice"
+import { useAppDispatch } from "../../models/hooks"
 
 const styles = StyleSheet.create({
   root: {
@@ -22,42 +22,54 @@ const styles = StyleSheet.create({
   },
 })
 
-export const LoginScreen = observer(function LoginScreen() {
+export const LoginScreen = () => {
   const [loading, setLoading] = useState(false)
-  const { settingsStore } = useStores()
-  const handleLogin = async () => {
+
+  const dispatch = useAppDispatch()
+
+  const handleLogin = async ({ email = "test@gmail.com", password = "123456" }) => {
     setLoading(true)
     try {
-      const { user } = await signInWithEmailAndPassword("test@gmail.com", "123456")
+      const { user } = await signInWithEmailAndPassword(email, password)
 
-      const requestsRes = (await database().ref(`/users/${user.uid}/requests`).once("value")).val()
+      const userRes = await (await database().ref(`/users/${user.uid}`).once("value")).val()
 
-      const requests = Object.keys(requestsRes).map((id) => {
-        return RequestModel.create({ id, accepted: requestsRes[id].accepted })
-      })
+      const requests: Request[] =
+        userRes.requests &&
+        Object.values(userRes.requests).map((e: Request) => {
+          const request: Request = {
+            macId: e.macId,
+            accepted: e.accepted,
+            requestedBy: e.requestedBy,
+          }
+          return request
+        })
 
-      const workspacesRes = await (
-        await database().ref(`/users/${user.uid}/workspaces`).once("value")
-      ).val()
+      const workSpaces = await Promise.all(
+        userRes.workspaces &&
+          Object.values(userRes.workspaces).map(async (e) => {
+            const workSpace = (await database().ref(`/workspaces/${e.name}`).once("value")).val()
 
-      const workspaceNames = Object.keys(workspacesRes)
+            const tables = await Promise.all(
+              Object.values(workSpace.tables).map(async (e) => {
+                const tableRes = (await database().ref(`/tables/${e.macId}`).once("value")).val()
 
-      const workspaces = await Promise.all(
-        workspaceNames.map(async (e) => {
-          const workspace = (await database().ref(`/workspaces/${e}`).once("value")).val()
-
-          const tableNames = Object.keys(workspace)
-          const tables = await Promise.all(
-            tableNames.map(async (e) => {
-              const { users, usedBy } = (await database().ref(`/tables/${e}`).once("value")).val()
-              return TableModel.create({ id: e, users: Object.keys(users), usedBy })
-            }),
-          )
-          return WorkspaceModel.create({ name: e, tables })
-        }),
+                const table: Table = {
+                  macId: tableRes.macId,
+                  usedBy: tableRes.usedBy,
+                  users: Object.values(tableRes.users),
+                }
+                return table
+              }),
+            )
+            return { name: workSpace.name, tables: tables }
+          }),
       )
+      console.log({ user: { uid: user.uid, name: userRes.name, email }, requests, workSpaces })
 
-      settingsStore.login(user.uid, user.email, requests, workspaces)
+      dispatch(
+        loginUser({ user: { uid: user.uid, name: userRes.name, email }, requests, workSpaces }),
+      )
     } catch (err) {
       Alert.alert("Error", err.message)
     }
@@ -90,4 +102,4 @@ export const LoginScreen = observer(function LoginScreen() {
       <LoadingModal loading={loading} />
     </Screen>
   )
-})
+}

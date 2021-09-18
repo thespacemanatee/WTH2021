@@ -1,9 +1,3 @@
-/**
- * The app navigator (formerly "AppNavigator" and "MainNavigator") is used for the primary
- * navigation flows of your app.
- * Generally speaking, it will contain an auth flow (registration, login, forgot password)
- * and a "main" flow which the user will use once logged in.
- */
 import React from "react"
 import { useColorScheme } from "react-native"
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"
@@ -16,24 +10,12 @@ import {
 } from "@react-navigation/drawer"
 
 import { DashboardScreen, LoginScreen } from "../screens"
-import { navigationRef } from "./navigation-utilities"
-import { useStores } from "../models"
-import { observer } from "mobx-react-lite"
 import { Device } from "react-native-ble-plx"
 import { AddTableScreen } from "../screens/add-table/add-table-screen"
+import { useAppSelector } from "../models/hooks"
+import { useDispatch } from "react-redux"
+import { logoutUser } from "../models/features/settings/settingsSlice"
 
-/**
- * This type allows TypeScript to know what routes are defined in this navigator
- * as well as what properties (if any) they might take when navigating to them.
- *
- * If no params are allowed, pass through `undefined`. Generally speaking, we
- * recommend using your MobX-State-Tree store(s) to keep application state
- * rather than passing state through navigation params.
- *
- * For more information, see this documentation:
- *   https://reactnavigation.org/docs/params/
- *   https://reactnavigation.org/docs/typescript#type-checking-the-navigator
- */
 export type AuthNavigatorParamList = {
   Login: undefined
 }
@@ -48,10 +30,11 @@ const Stack = createNativeStackNavigator<AuthNavigatorParamList>()
 const Drawer = createDrawerNavigator<AppNavigatorParamList>()
 
 const CustomDrawerContent = (props) => {
-  const { settingsStore } = useStores()
+
+  const dispatch = useDispatch()
 
   const handleLogout = () => {
-    settingsStore.logout()
+    dispatch(logoutUser())
   }
 
   return (
@@ -90,20 +73,16 @@ const AuthStack = () => {
 
 interface NavigationProps extends Partial<React.ComponentProps<typeof NavigationContainer>> {}
 
-export const AppNavigator = observer((props: NavigationProps) => {
+export const AppNavigator = (props: NavigationProps) => {
+  const currentUser = useAppSelector((state) => state.settings.currentUser)
   const colorScheme = useColorScheme()
-  const { settingsStore } = useStores()
 
   return (
-    <NavigationContainer
-      ref={navigationRef}
-      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-      {...props}
-    >
-      {settingsStore.currentlyLoggedIn ? <AppStack /> : <AuthStack />}
+    <NavigationContainer theme={colorScheme === "dark" ? DarkTheme : DefaultTheme} {...props}>
+      {currentUser ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   )
-})
+}
 
 AppNavigator.displayName = "AppNavigator"
 

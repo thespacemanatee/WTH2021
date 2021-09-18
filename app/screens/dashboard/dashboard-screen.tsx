@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { Alert, StyleSheet, View } from "react-native"
+import { Alert, ScrollView, StyleSheet, View } from "react-native"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 
 import { Button, Screen, TableCard, Text } from "../../components"
@@ -10,33 +10,36 @@ import { useNavigation } from "@react-navigation/core"
 import { AddNewDeviceModal } from "../../components/add-new-device-modal/add-new-device-modal"
 import { Device } from "react-native-ble-plx"
 import { getTables } from "../../services/firebase"
-import { useStores } from "../../models"
+import { updateDashboardTables } from "../../models/features/settings/settingsSlice"
+import { useAppDispatch, useAppSelector } from "../../models/hooks"
 
 const styles = StyleSheet.create({
-  root: {
-    backgroundColor: color.palette.black,
-    flex: 1,
-  },
-  hamburger: {
-    marginTop: 16,
-    marginLeft: 16,
-  },
-  contentContainer: {
-    flex: 1,
-  },
   button: {
     margin: 16,
   },
   buttonText: {
     fontSize: 16,
   },
+  contentContainer: {
+    flex: 1,
+  },
+  hamburger: {
+    marginLeft: 16,
+    marginTop: 16,
+  },
+  root: {
+    backgroundColor: color.palette.black,
+    flex: 1,
+  },
 })
 
 export const DashboardScreen = observer(function DashboardScreen() {
+  const settingsStore = useAppSelector((state) => state.settings)
   const [bluetoothLoading, setBluetoothLoading] = useState(false)
   const [devices, setDevices] = useState<Device[]>([])
   const [visible, setVisible] = useState(false)
-  const { settingsStore } = useStores()
+
+  const dispatch = useAppDispatch()
 
   const navigation = useNavigation()
 
@@ -69,10 +72,11 @@ export const DashboardScreen = observer(function DashboardScreen() {
 
   useEffect(() => {
     const getTablesFromFirebase = async () => {
-      const tables = await getTables()
-      settingsStore.updateDashboardTables(tables)
+      const tables = await getTables(settingsStore.currentUser.uid)
+      dispatch(updateDashboardTables(tables))
     }
-  }, [])
+    getTablesFromFirebase()
+  }, [dispatch, settingsStore.currentUser.uid])
 
   return (
     <Screen style={styles.root} preset="scroll">
@@ -86,7 +90,11 @@ export const DashboardScreen = observer(function DashboardScreen() {
       <View style={styles.contentContainer}>
         <Text preset="header" text="Welcome {Name}!" style={{ fontSize: 32, margin: 16 }} />
         <Text preset="header" text="Your Tables" style={{ marginHorizontal: 20 }} />
-        <TableCard />
+        <ScrollView horizontal contentContainerStyle={{ flexDirection: "row" }}>
+          {settingsStore.dashboardTables?.map((e) => {
+            return <TableCard key={e.macId} table={e} />
+          })}
+        </ScrollView>
         <Button
           text="Add New Table"
           style={styles.button}
@@ -94,7 +102,6 @@ export const DashboardScreen = observer(function DashboardScreen() {
           onPress={scanDevices}
         />
         <Text preset="header" text="Your Workspaces" style={{ marginHorizontal: 20 }} />
-        <TableCard />
         <AddNewDeviceModal
           devices={devices}
           visible={visible}
