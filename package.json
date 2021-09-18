@@ -37,6 +37,7 @@
     "apisauce": "2.1.1",
     "expo-linear-gradient": "^9.2.0",
     "expo-localization": "10.2.0",
+    "firebase": "^9.0.2",
     "i18n-js": "3.8.0",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
