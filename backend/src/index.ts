@@ -13,7 +13,7 @@ app.use(express.static("public"))
 
 var admin = require("firebase-admin")
 
-var serviceAccount = require("/home/carey/Downloads/iotable-852f0-84b2baf22d97.json")
+var serviceAccount = require("../iotable.json")
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
