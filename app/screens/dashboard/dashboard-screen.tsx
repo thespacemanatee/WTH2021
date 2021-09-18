@@ -59,6 +59,7 @@ export const DashboardScreen = observer(function DashboardScreen() {
         Alert.alert("Error", error.message)
       }
       if (scannedDevice) {
+        console.log(scannedDevice)
         const toSave = BluetoothDeviceModel.create({ id: scannedDevice.id, connected: false })
         settingsStore.saveBluetoothDevice(toSave)
       }
