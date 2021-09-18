@@ -8,8 +8,17 @@ import React from "react"
 import { useColorScheme } from "react-native"
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { DashboardScreen } from "../screens"
+import {
+  createDrawerNavigator,
+  DrawerItemList,
+  DrawerItem,
+  DrawerContentScrollView,
+} from "@react-navigation/drawer"
+
+import { DashboardScreen, LoginScreen } from "../screens"
 import { navigationRef } from "./navigation-utilities"
+import { useStores } from "../models"
+import { observer } from "mobx-react-lite"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -23,51 +32,76 @@ import { navigationRef } from "./navigation-utilities"
  *   https://reactnavigation.org/docs/params/
  *   https://reactnavigation.org/docs/typescript#type-checking-the-navigator
  */
-export type NavigatorParamList = {
-  dashboard: undefined
+export type AuthNavigatorParamList = {
+  Login: undefined
+}
+
+export type AppNavigatorParamList = {
+  Dashboard: undefined
 }
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
-const Stack = createNativeStackNavigator<NavigatorParamList>()
+const Stack = createNativeStackNavigator<AuthNavigatorParamList>()
+const Drawer = createDrawerNavigator<AppNavigatorParamList>()
+
+const CustomDrawerContent = (props) => {
+  const { settingsStore } = useStores()
+
+  const handleLogout = () => {
+    settingsStore.logout()
+  }
+
+  return (
+    <DrawerContentScrollView {...props}>
+      <DrawerItemList {...props} />
+      <DrawerItem label="Logout" onPress={handleLogout} />
+    </DrawerContentScrollView>
+  )
+}
 
 const AppStack = () => {
+  return (
+    <Drawer.Navigator
+      initialRouteName="Dashboard"
+      screenOptions={{ headerShown: false }}
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+    >
+      <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+    </Drawer.Navigator>
+  )
+}
+
+const AuthStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="dashboard"
+      initialRouteName="Login"
     >
-      <Stack.Screen name="dashboard" component={DashboardScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
     </Stack.Navigator>
   )
 }
 
 interface NavigationProps extends Partial<React.ComponentProps<typeof NavigationContainer>> {}
 
-export const AppNavigator = (props: NavigationProps) => {
+export const AppNavigator = observer((props: NavigationProps) => {
   const colorScheme = useColorScheme()
+  const { settingsStore } = useStores()
+
   return (
     <NavigationContainer
       ref={navigationRef}
       theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
       {...props}
     >
-      <AppStack />
+      {settingsStore.currentlyLoggedIn ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   )
-}
+})
 
 AppNavigator.displayName = "AppNavigator"
 
-/**
- * A list of routes from which we're allowed to leave the app when
- * the user presses the back button on Android.
- *
- * Anything not on this list will be a standard `back` action in
- * react-navigation.
- *
- * `canExit` is used in ./app/app.tsx in the `useBackButtonHandler` hook.
- */
-const exitRoutes = ["welcome"]
+const exitRoutes = ["login", "dashboard"]
 export const canExit = (routeName: string) => exitRoutes.includes(routeName)

@@ -1,5 +1,6 @@
 import "./i18n"
 import "./utils/ignore-warnings"
+import 'react-native-gesture-handler';
 import React, { useState, useEffect } from "react"
 import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context"
 import { initFonts } from "./theme/fonts" // expo
