@@ -91,6 +91,7 @@ export const DashboardScreen = observer(function DashboardScreen() {
           devices={devices}
           visible={visible}
           onPress={navigateAddTableScreen}
+          loading={bluetoothLoading}
           dismiss={() => setVisible(false)}
         />
       </View>

@@ -80,4 +80,19 @@ void loop()
       delay(20);           // waits 15ms for the servo to reach the position
     }
   }
+  
+  // disconnecting
+  if (!deviceConnected && oldDeviceConnected)
+  {
+    delay(500);                  // give the bluetooth stack the chance to get things ready
+    pServer->startAdvertising(); // restart advertising
+    Serial.println("Start advertising...");
+    oldDeviceConnected = deviceConnected;
+  }
+  // connecting
+  if (deviceConnected && !oldDeviceConnected)
+  {
+    // do stuff here on connecting
+    oldDeviceConnected = deviceConnected;
+  }
 }
