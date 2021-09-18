@@ -82,3 +82,5 @@ web-build/
 app/config/env.*.js
 !env.js
 android/app/google-services.json
+
+node_modules
