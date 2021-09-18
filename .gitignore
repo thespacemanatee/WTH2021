@@ -84,3 +84,4 @@ app/config/env.*.js
 android/app/google-services.json
 
 node_modules
+backend/iotable.json

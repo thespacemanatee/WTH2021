@@ -1,8 +1,10 @@
 import React from "react"
 import LottieView from "lottie-react-native"
 
-const TableAnimation = () => {
-  return <LottieView source={require("../../assets/lottie/table_lottie.json")} autoPlay loop />
+const TableAnimation = ({ style }) => {
+  return (
+    <LottieView style={style} source={require("../../assets/lottie/table.json")} autoPlay loop />
+  )
 }
 
 export default TableAnimation

@@ -14,23 +14,30 @@ import { Device } from "react-native-ble-plx"
 import { AddTableScreen } from "../screens/add-table/add-table-screen"
 import { useAppSelector } from "../models/hooks"
 import { useDispatch } from "react-redux"
-import { logoutUser } from "../models/features/settings/settingsSlice"
+import { logoutUser, Workspace } from "../models/features/settings/settingsSlice"
+import TableScreen from "../screens/table/table-screen"
+import WorkspaceScreen from "../screens/workspace-screen/workspace-screen"
 
 export type AuthNavigatorParamList = {
   Login: undefined
 }
 
-export type AppNavigatorParamList = {
+export type DashboardNavigatorParamList = {
   Dashboard: undefined
+  Table: { macId: string }
+  Workspace: { workspace: Workspace }
   AddTable: { device: Device }
 }
 
-// Documentation: https://reactnavigation.org/docs/stack-navigator/
-const Stack = createNativeStackNavigator<AuthNavigatorParamList>()
+export type AppNavigatorParamList = {
+  DashboardStack: undefined
+}
+
+const AuthStack = createNativeStackNavigator<AuthNavigatorParamList>()
+const DashboardStack = createNativeStackNavigator<DashboardNavigatorParamList>()
 const Drawer = createDrawerNavigator<AppNavigatorParamList>()
 
 const CustomDrawerContent = (props) => {
-
   const dispatch = useDispatch()
 
   const handleLogout = () => {
@@ -48,26 +55,41 @@ const CustomDrawerContent = (props) => {
 const AppStack = () => {
   return (
     <Drawer.Navigator
-      initialRouteName="Dashboard"
+      initialRouteName="DashboardStack"
       screenOptions={{ headerShown: false }}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
-      <Drawer.Screen name="Dashboard" component={DashboardScreen} />
-      <Drawer.Screen name="AddTable" component={AddTableScreen} />
+      <Drawer.Screen name="DashboardStack" component={DashboardStackNavigator} />
     </Drawer.Navigator>
   )
 }
 
-const AuthStack = () => {
+const DashboardStackNavigator = () => {
   return (
-    <Stack.Navigator
+    <DashboardStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+      initialRouteName="Dashboard"
+    >
+      <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+      <Drawer.Screen name="Table" component={TableScreen} />
+      <Drawer.Screen name="Workspace" component={WorkspaceScreen} />
+      <Drawer.Screen name="AddTable" component={AddTableScreen} />
+    </DashboardStack.Navigator>
+  )
+}
+
+const AuthStackNavigator = () => {
+  return (
+    <AuthStack.Navigator
       screenOptions={{
         headerShown: false,
       }}
       initialRouteName="Login"
     >
-      <Stack.Screen name="Login" component={LoginScreen} />
-    </Stack.Navigator>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+    </AuthStack.Navigator>
   )
 }
 
@@ -79,7 +101,7 @@ export const AppNavigator = (props: NavigationProps) => {
 
   return (
     <NavigationContainer theme={colorScheme === "dark" ? DarkTheme : DefaultTheme} {...props}>
-      {currentUser ? <AppStack /> : <AuthStack />}
+      {currentUser ? <AppStack /> : <AuthStackNavigator />}
     </NavigationContainer>
   )
 }

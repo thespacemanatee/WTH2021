@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from "react"
-import { observer } from "mobx-react-lite"
+import React, { useCallback, useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, View } from "react-native"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 
 import { Button, Screen, TableCard, Text } from "../../components"
 import { color } from "../../theme"
 import { bleManagerRef } from "../../utils/bluetooth/BleHelper"
-import { useNavigation } from "@react-navigation/core"
+import { useFocusEffect, useNavigation } from "@react-navigation/core"
 import { AddNewDeviceModal } from "../../components/add-new-device-modal/add-new-device-modal"
 import { Device } from "react-native-ble-plx"
-import { getTables } from "../../services/firebase"
-import { updateDashboardTables } from "../../models/features/settings/settingsSlice"
+import { getTableByUid, getWorkspaces } from "../../services/firebase"
+import {
+  updateDashboardTables,
+  updateDashboardWorkspaces,
+  Workspace,
+} from "../../models/features/settings/settingsSlice"
 import { useAppDispatch, useAppSelector } from "../../models/hooks"
+import { TouchableOpacity } from "react-native-gesture-handler"
+import { WorkspaceCard } from "../../components/workspace-card/workspace-card"
 
 const styles = StyleSheet.create({
   button: {
@@ -33,7 +38,7 @@ const styles = StyleSheet.create({
   },
 })
 
-export const DashboardScreen = observer(function DashboardScreen() {
+export const DashboardScreen = () => {
   const settingsStore = useAppSelector((state) => state.settings)
   const [bluetoothLoading, setBluetoothLoading] = useState(false)
   const [devices, setDevices] = useState<Device[]>([])
@@ -46,6 +51,14 @@ export const DashboardScreen = observer(function DashboardScreen() {
   const navigateAddTableScreen = (device: Device) => {
     navigation.navigate("AddTable", { device })
     setVisible(false)
+  }
+
+  const navigateTableScreen = (macId: string) => {
+    navigation.navigate("Table", { macId })
+  }
+
+  const navigateWorkspaceScreen = (workspace: Workspace) => {
+    navigation.navigate("Workspace", { workspace })
   }
 
   const scanDevices = async () => {
@@ -70,13 +83,21 @@ export const DashboardScreen = observer(function DashboardScreen() {
     })
   }
 
-  useEffect(() => {
-    const getTablesFromFirebase = async () => {
-      const tables = await getTables(settingsStore.currentUser.uid)
-      dispatch(updateDashboardTables(tables))
-    }
-    getTablesFromFirebase()
-  }, [dispatch, settingsStore.currentUser.uid])
+  useFocusEffect(
+    useCallback(() => {
+      const getTablesFromFirebase = async () => {
+        try {
+          const tables = await getTableByUid(settingsStore.currentUser.uid)
+          const workspaces = await getWorkspaces(settingsStore.currentUser.uid)
+          dispatch(updateDashboardTables(tables))
+          dispatch(updateDashboardWorkspaces(workspaces))
+        } catch (err) {
+          Alert.alert("Error", err.message)
+        }
+      }
+      getTablesFromFirebase()
+    }, [dispatch, settingsStore.currentUser.uid]),
+  )
 
   return (
     <Screen style={styles.root} preset="scroll">
@@ -88,11 +109,27 @@ export const DashboardScreen = observer(function DashboardScreen() {
         style={styles.hamburger}
       />
       <View style={styles.contentContainer}>
-        <Text preset="header" text="Welcome {Name}!" style={{ fontSize: 32, margin: 16 }} />
+        <Text
+          preset="header"
+          text={`Welcome ${settingsStore.currentUser.name}!`}
+          style={{ fontSize: 32, margin: 16 }}
+        />
         <Text preset="header" text="Your Tables" style={{ marginHorizontal: 20 }} />
-        <ScrollView horizontal contentContainerStyle={{ flexDirection: "row" }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ flexDirection: "row" }}
+        >
           {settingsStore.dashboardTables?.map((e) => {
-            return <TableCard key={e.macId} table={e} />
+            return (
+              <TouchableOpacity
+                key={e.macId}
+                activeOpacity={0.6}
+                onPress={() => navigateTableScreen(e.macId)}
+              >
+                <TableCard table={e} />
+              </TouchableOpacity>
+            )
           })}
         </ScrollView>
         <Button
@@ -102,6 +139,23 @@ export const DashboardScreen = observer(function DashboardScreen() {
           onPress={scanDevices}
         />
         <Text preset="header" text="Your Workspaces" style={{ marginHorizontal: 20 }} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ flexDirection: "row" }}
+        >
+          {settingsStore.dashboardWorkspaces?.map((e) => {
+            return (
+              <TouchableOpacity
+                key={e.name}
+                activeOpacity={0.6}
+                onPress={() => navigateWorkspaceScreen(e)}
+              >
+                <WorkspaceCard workspace={e} />
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
         <AddNewDeviceModal
           devices={devices}
           visible={visible}
@@ -112,4 +166,4 @@ export const DashboardScreen = observer(function DashboardScreen() {
       </View>
     </Screen>
   )
-})
+}

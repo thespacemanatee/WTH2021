@@ -40,6 +40,7 @@
     "@reduxjs/toolkit": "^1.6.1",
     "@unimodules/core": "7.1.2",
     "apisauce": "2.1.1",
+    "axios": "^0.21.4",
     "base-64": "^1.0.0",
     "expo-linear-gradient": "^9.2.0",
     "expo-localization": "10.2.0",

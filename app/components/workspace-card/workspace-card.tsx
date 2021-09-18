@@ -1,8 +1,9 @@
 import * as React from "react"
 import { StyleProp, View, ViewStyle, StyleSheet } from "react-native"
 import { Text } from "../text/text"
-import { Table } from "../../models/features/settings/settingsSlice"
+import { Workspace } from "../../models/features/settings/settingsSlice"
 import TableAnimation from "../TableAnimation"
+import WorkspaceAnimation from "../WorkspaceAnimation"
 
 const styles = StyleSheet.create({
   container: {
@@ -19,23 +20,23 @@ const styles = StyleSheet.create({
   },
 })
 
-export interface TableCardProps {
+export interface WorkspaceCardProps {
   /**
    * An optional style override useful for padding & margin.
    */
-  table: Table
+  workspace: Workspace
   style?: StyleProp<ViewStyle>
 }
 
 /**
  * Describe your component here
  */
-export const TableCard = (props: TableCardProps) => {
+export const WorkspaceCard = (props: WorkspaceCardProps) => {
   return (
     <View style={styles.container}>
-      <Text preset="header" text={props.table.macId} style={styles.headerText} />
+      <Text preset="header" text={props.workspace.name} style={styles.headerText} />
       <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <TableAnimation style={{ width: 200, height: 200 }} />
+        <WorkspaceAnimation style={{ width: 200, height: 200 }} />
       </View>
     </View>
   )

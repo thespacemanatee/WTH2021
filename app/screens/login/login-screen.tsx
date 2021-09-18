@@ -50,18 +50,19 @@ export const LoginScreen = () => {
           Object.values(userRes.workspaces).map(async (e) => {
             const workSpace = (await database().ref(`/workspaces/${e.name}`).once("value")).val()
 
-            const tables = await Promise.all(
-              Object.values(workSpace.tables).map(async (e) => {
-                const tableRes = (await database().ref(`/tables/${e.macId}`).once("value")).val()
+            const tables =
+              workSpace.tables &&
+              Object.values(workSpace.tables).map((e) => {
+                return e.macId
+                // const tableRes = (await database().ref(`/tables/${e.macId}`).once("value")).val()
+                // const table: Table = {
+                //   macId: tableRes.macId,
+                //   usedBy: tableRes.usedBy,
+                //   users: Object.values(tableRes.users),
+                // }
+                // return table
+              })
 
-                const table: Table = {
-                  macId: tableRes.macId,
-                  usedBy: tableRes.usedBy,
-                  users: Object.values(tableRes.users),
-                }
-                return table
-              }),
-            )
             return { name: workSpace.name, tables: tables }
           }),
       )

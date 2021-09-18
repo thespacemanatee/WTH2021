@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect } from "react"
-import { observer } from "mobx-react-lite"
 import { Alert, StyleSheet, View } from "react-native"
 import { Formik } from "formik"
 import * as Yup from "yup"
+import axios from "axios"
 
 import { Button, Screen, Text, TextField } from "../../components"
 import { color } from "../../theme"
 import { Subscription } from "react-native-ble-plx"
 import { useNavigation } from "@react-navigation/core"
+import { useAppSelector } from "../../models/hooks"
 
 const styles = StyleSheet.create({
   root: {
@@ -22,7 +23,8 @@ const styles = StyleSheet.create({
   },
 })
 
-export const AddTableScreen = observer(function AddTableScreen({ route }) {
+export const AddTableScreen = ({ route }) => {
+  const currentUser = useAppSelector((state) => state.settings.currentUser)
   const { device } = route.params
   const navigation = useNavigation()
 
@@ -35,11 +37,32 @@ export const AddTableScreen = observer(function AddTableScreen({ route }) {
     }
   }, [device])
 
-  const handleSubmit = (values: { email: string }) => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Dashboard" }],
-    })
+  const handleSubmit = async (values: { email: string }) => {
+    try {
+      console.log({
+        email: values.email,
+        macId: device.id,
+        uid: currentUser.uid,
+      })
+      const res = await axios({
+        method: "put",
+        url: "",
+        data: {
+          email: values.email,
+          macId: device.id,
+          uid: currentUser.uid,
+        },
+      })
+
+      console.log(res)
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Dashboard" }],
+      })
+    } catch (err) {
+      Alert.alert("Error", err.message)
+    }
   }
 
   useEffect(() => {
@@ -104,4 +127,4 @@ export const AddTableScreen = observer(function AddTableScreen({ route }) {
       </Formik>
     </Screen>
   )
-})
+}

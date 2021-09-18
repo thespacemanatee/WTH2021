@@ -13,9 +13,9 @@ export type Request = {
   accepted: boolean
 }
 
-export type WorkSpace = {
+export type Workspace = {
   name: string
-  tables: Table[]
+  tables: string[]
 }
 
 export type Table = {
@@ -30,19 +30,21 @@ export type Table = {
 export type LoginUser = {
   user: User
   requests: Request[]
-  workSpaces: WorkSpace[]
+  workSpaces: Workspace[]
 }
 
 interface SettingsState {
   currentUser: User
   dashboardTables: Table[]
+  dashboardWorkspaces: Workspace[]
   requests: Request[]
-  workSpaces: WorkSpace[]
+  workSpaces: Workspace[]
 }
 
 const initialState: SettingsState = {
   currentUser: null,
   dashboardTables: null,
+  dashboardWorkspaces: null,
   requests: null,
   workSpaces: null,
 }
@@ -62,9 +64,13 @@ export const settingsSlice = createSlice({
     updateDashboardTables: (state, action: PayloadAction<Table[]>) => {
       state.dashboardTables = action.payload
     },
+    updateDashboardWorkspaces: (state, action: PayloadAction<Workspace[]>) => {
+      state.dashboardWorkspaces = action.payload
+    },
   },
 })
 
-export const { loginUser, logoutUser, updateDashboardTables } = settingsSlice.actions
+export const { loginUser, logoutUser, updateDashboardTables, updateDashboardWorkspaces } =
+  settingsSlice.actions
 
 export default settingsSlice.reducer
