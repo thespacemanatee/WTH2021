@@ -7,6 +7,7 @@ import * as Yup from "yup"
 import { Button, Screen, Text, TextField } from "../../components"
 import { color } from "../../theme"
 import { Subscription } from "react-native-ble-plx"
+import { useNavigation } from "@react-navigation/core"
 
 const styles = StyleSheet.create({
   root: {
@@ -21,8 +22,11 @@ const styles = StyleSheet.create({
   },
 })
 
-export const AddTableScreen = observer(function AddTableScreen({ route, navigation }) {
+export const AddTableScreen = observer(function AddTableScreen({ route }) {
   const { device } = route.params
+  const navigation = useNavigation()
+
+  console.log(device.id)
 
   const disconnectDevice = useCallback(async () => {
     const isDeviceConnected = await device.isConnected()
@@ -30,6 +34,13 @@ export const AddTableScreen = observer(function AddTableScreen({ route, navigati
       await device.cancelConnection()
     }
   }, [device])
+
+  const handleSubmit = (values: { email: string }) => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Dashboard" }],
+    })
+  }
 
   useEffect(() => {
     let subscription: Subscription | null
@@ -66,7 +77,10 @@ export const AddTableScreen = observer(function AddTableScreen({ route, navigati
         validationSchema={Yup.object({
           email: Yup.string().email("Invalid email address").required("Required"),
         })}
-        onSubmit={(values) => console.log(values)}
+        onSubmit={(values) => {
+          console.log(values)
+          handleSubmit(values)
+        }}
       >
         {({ handleChange, handleBlur, handleSubmit, errors, values }) => (
           <View>

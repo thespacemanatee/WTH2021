@@ -6,7 +6,7 @@ import database from "@react-native-firebase/database"
 import { Button, Screen, Text } from "../../components"
 import { color } from "../../theme"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "../../services/firebase"
-import { Request, RequestModel, TableModel, useStores, WorkspaceModel } from "../../models"
+import { RequestModel, TableModel, useStores, WorkspaceModel } from "../../models"
 import { LoadingModal } from "../../components/loading-modal/loading-modal"
 
 const styles = StyleSheet.create({

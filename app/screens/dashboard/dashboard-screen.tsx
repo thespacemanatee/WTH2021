@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { Alert, StyleSheet, View } from "react-native"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
@@ -9,6 +9,8 @@ import { bleManagerRef } from "../../utils/bluetooth/BleHelper"
 import { useNavigation } from "@react-navigation/core"
 import { AddNewDeviceModal } from "../../components/add-new-device-modal/add-new-device-modal"
 import { Device } from "react-native-ble-plx"
+import { getTables } from "../../services/firebase"
+import { useStores } from "../../models"
 
 const styles = StyleSheet.create({
   root: {
@@ -34,6 +36,7 @@ export const DashboardScreen = observer(function DashboardScreen() {
   const [bluetoothLoading, setBluetoothLoading] = useState(false)
   const [devices, setDevices] = useState<Device[]>([])
   const [visible, setVisible] = useState(false)
+  const { settingsStore } = useStores()
 
   const navigation = useNavigation()
 
@@ -58,13 +61,18 @@ export const DashboardScreen = observer(function DashboardScreen() {
         setBluetoothLoading(false)
         Alert.alert("Error", error.message)
       }
-      if (scannedDevice) {
-        if (scannedDevice.name === "IoTable" && !devices.some((e) => e.id === scannedDevice.id)) {
-          setDevices([...devices, scannedDevice])
-        }
+      if (scannedDevice.name === "IoTable" && !devices.some((e) => e.id === scannedDevice.id)) {
+        setDevices(devices.concat(scannedDevice))
       }
     })
   }
+
+  useEffect(() => {
+    const getTablesFromFirebase = async () => {
+      const tables = await getTables()
+      settingsStore.updateDashboardTables(tables)
+    }
+  }, [])
 
   return (
     <Screen style={styles.root} preset="scroll">

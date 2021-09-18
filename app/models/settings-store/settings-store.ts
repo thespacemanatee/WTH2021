@@ -1,9 +1,8 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 
 import { UserModel } from "../user/user"
-import { BluetoothDeviceModel, BluetoothDeviceSnapshot } from "../bluetooth-device/bluetooth-device"
 import { withEnvironment } from "../extensions/with-environment"
-import { Request, Workspace } from ".."
+import { Request, TableSnapshot, Workspace } from ".."
 
 export const SettingsStoreModel = types.late(() => StoreModel)
 
@@ -14,7 +13,7 @@ const StoreModel = types
   .model("SettingsStore")
   .props({
     currentlyLoggedIn: types.maybe(UserModel),
-    bluetoothDevices: types.optional(types.array(BluetoothDeviceModel), []),
+    // dashboardTables: types.maybe(types.array(TableModel)),
   })
   .extend(withEnvironment)
   .actions((self) => ({
@@ -33,13 +32,10 @@ const StoreModel = types
     },
   }))
   .actions((self) => ({
-    saveBluetoothDevice: (device: BluetoothDeviceSnapshot) => {
-      if (!self.bluetoothDevices.some((e) => e.id === device.id)) self.bluetoothDevices.push(device)
-    },
-  }))
-  .actions((self) => ({
-    clearBluetoothDevices: () => {
-      self.bluetoothDevices.clear()
+    updateDashboardTables: (tables: TableSnapshot[]) => {
+      // self.dashboardTables = tables.map((e) =>
+      // TableModel.create({ id: e.id, usedBy: e.usedBy, users: e.users }),
+      // )
     },
   }))
 
