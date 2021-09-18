@@ -1,17 +1,17 @@
 import "./i18n"
 import "./utils/ignore-warnings"
-import 'react-native-gesture-handler';
-import React, { useState, useEffect } from "react"
+import "react-native-gesture-handler"
+import React, { useEffect } from "react"
 import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context"
-import { initFonts } from "./theme/fonts" // expo
-import * as storage from "./utils/storage"
-import { useBackButtonHandler, AppNavigator, canExit, useNavigationPersistence } from "./navigators"
-import { RootStore, RootStoreProvider, setupRootStore } from "./models"
-import { ToggleStorybook } from "../storybook/toggle-storybook"
-import { bleManagerRef } from "./utils/bluetooth/BleHelper"
+import { Provider } from "react-redux"
 import { BleManager } from "react-native-ble-plx"
 
+import { store } from "./models/store"
+import { initFonts } from "./theme/fonts" // expo
+import { ToggleStorybook } from "../storybook/toggle-storybook"
+import { bleManagerRef } from "./utils/bluetooth/BleHelper"
 import { requestLocationPermissions } from "./utils/permissions"
+import { AppNavigator } from "./navigators"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -19,36 +19,21 @@ export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
  * This is the root component of our app.
  */
 function App() {
-  const [rootStore, setRootStore] = useState<RootStore | undefined>(undefined)
-
-  useBackButtonHandler(canExit)
-  const {
-    initialNavigationState,
-    onNavigationStateChange,
-    isRestored: isNavigationStateRestored,
-  } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY)
-
   useEffect(() => {
     ;(async () => {
       await initFonts() // expo
       await requestLocationPermissions()
-      setupRootStore().then(setRootStore)
       bleManagerRef.current = new BleManager()
     })()
   }, [])
 
-  if (!rootStore || !isNavigationStateRestored) return null
-
   return (
     <ToggleStorybook>
-      <RootStoreProvider value={rootStore}>
+      <Provider store={store}>
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <AppNavigator
-            initialState={initialNavigationState}
-            onStateChange={onNavigationStateChange}
-          />
+          <AppNavigator />
         </SafeAreaProvider>
-      </RootStoreProvider>
+      </Provider>
     </ToggleStorybook>
   )
 }
