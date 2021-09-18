@@ -39,9 +39,11 @@
     "@react-navigation/stack": "~6.0.1",
     "@unimodules/core": "7.1.2",
     "apisauce": "2.1.1",
+    "base-64": "^1.0.0",
     "expo-linear-gradient": "^9.2.0",
     "expo-localization": "10.2.0",
     "firebase": "^9.0.2",
+    "formik": "^2.2.9",
     "i18n-js": "3.8.0",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
@@ -60,7 +62,8 @@
     "reactotron-mst": "3.1.3",
     "reactotron-react-js": "^3.3.7",
     "reactotron-react-native": "5.0.0",
-    "validate.js": "0.13.1"
+    "validate.js": "0.13.1",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -70,6 +73,7 @@
     "@storybook/addon-storyshots": "6.3.8",
     "@storybook/react-native": "5.3.25",
     "@storybook/react-native-server": "5.3.23",
+    "@types/base-64": "^1.0.0",
     "@types/i18n-js": "3.8.2",
     "@types/jest": "27.0.1",
     "@types/react": "17.0.20",
@@ -87,6 +91,7 @@
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "5.1.0",
     "eslint-plugin-react": "7.25.1",
+    "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-react-native": "3.11.0",
     "fbjs-scripts": "3.0.0",
     "jest": "^27.1.1",
@@ -158,7 +163,8 @@
     "plugins": [
       "@typescript-eslint",
       "react",
-      "react-native"
+      "react-native",
+      "react-hooks"
     ],
     "parserOptions": {
       "ecmaFeatures": {
@@ -196,6 +202,7 @@
       "@typescript-eslint/no-explicit-any": 0,
       "@typescript-eslint/no-object-literal-type-assertion": 0,
       "@typescript-eslint/no-var-requires": 0,
+      "react-hooks/exhaustive-deps": "warn",
       "comma-dangle": 0,
       "multiline-ternary": 0,
       "no-undef": 0,

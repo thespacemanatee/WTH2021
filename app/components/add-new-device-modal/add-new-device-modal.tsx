@@ -1,7 +1,10 @@
 import * as React from "react"
-import { ActivityIndicator, Modal, StyleProp, View, ViewStyle, StyleSheet } from "react-native"
+import { Modal, StyleProp, View, ViewStyle, StyleSheet, Dimensions, Pressable } from "react-native"
 import { observer } from "mobx-react-lite"
-import { color } from "../../theme"
+import { Device } from "react-native-ble-plx"
+import DeviceCard from "../bleDevice/DeviceCard"
+import { Text } from ".."
+import { useNavigation } from "@react-navigation/core"
 
 const styles = StyleSheet.create({
   backdrop: {
@@ -11,34 +14,45 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   activityIndicator: {
-    height: 100,
-    width: 100,
+    maxHeight: Dimensions.get("window").height * 0.8,
+    width: Dimensions.get("window").width * 0.8,
     borderRadius: 20,
+    padding: 16,
     backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
   },
 })
 
-export interface LoadingModalProps {
+export interface AddNewDevicesModalProps {
   /**
    * An optional style override useful for padding & margin.
    */
-  loading: boolean
+  devices: any
+  visible: boolean
+  onPress: (device: Device) => void
+  dismiss: () => void
   style?: StyleProp<ViewStyle>
 }
 
 /**
  * Describe your component here
  */
-export const LoadingModal = observer(function LoadingModal({ loading, style }: LoadingModalProps) {
+export const AddNewDeviceModal = observer(function LoadingModal({
+  devices,
+  visible,
+  onPress,
+  dismiss,
+  style,
+}: AddNewDevicesModalProps) {
   return (
-    <Modal animationType="fade" hardwareAccelerated transparent visible={loading}>
-      <View style={styles.backdrop}>
+    <Modal animationType="fade" hardwareAccelerated transparent visible={visible}>
+      <Pressable style={styles.backdrop} onPress={dismiss}>
         <View style={styles.activityIndicator}>
-          <ActivityIndicator size="large" color={color.primary} />
+          <Text preset="header" text="Devices" style={{ fontSize: 32, color: "black" }} />
+          {devices.map((device: Device) => {
+            return <DeviceCard key={device.id} device={device} onPress={onPress} />
+          })}
         </View>
-      </View>
+      </Pressable>
     </Modal>
   )
 })

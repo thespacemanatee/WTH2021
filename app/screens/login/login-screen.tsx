@@ -67,7 +67,6 @@ export const LoginScreen = observer(function LoginScreen() {
   const handleCreateAccount = async () => {
     try {
       const results = await createUserWithEmailAndPassword("test@gmail.com", "123456")
-      console.log(results)
     } catch (err) {
       Alert.alert("Error", err.message)
     }

@@ -19,6 +19,8 @@ import { DashboardScreen, LoginScreen } from "../screens"
 import { navigationRef } from "./navigation-utilities"
 import { useStores } from "../models"
 import { observer } from "mobx-react-lite"
+import { Device } from "react-native-ble-plx"
+import { AddTableScreen } from "../screens/add-table/add-table-screen"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -38,6 +40,7 @@ export type AuthNavigatorParamList = {
 
 export type AppNavigatorParamList = {
   Dashboard: undefined
+  AddTable: { device: Device }
 }
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
@@ -67,6 +70,7 @@ const AppStack = () => {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
       <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+      <Drawer.Screen name="AddTable" component={AddTableScreen} />
     </Drawer.Navigator>
   )
 }
