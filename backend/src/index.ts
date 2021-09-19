@@ -26,9 +26,6 @@ app.put("/addNewEntry", (req, res) => {
     .auth()
     .getUserByEmail(req.body.email)
     .then(async function (userRecord: any) {
-      req.body.macId
-      req.body.senderUid
-
       /**
        * 3 things: targetEmail, currentUserUid, macId
        * validate and get uid of targetEmail.
@@ -42,22 +39,23 @@ app.put("/addNewEntry", (req, res) => {
       const macIdGiven = req.body.macId
       const currentUserUid = req.body.uid
 
-      let name: string = ""
+      // console.log(req.body)
+
+      let currentName: string = ""
 
       await adminDatabase.ref(`users/${currentUserUid}/name`).once("value", (data: any) => {
-        console.log("inside the arrow:", data.val())
-        name = data.val()
+        //   console.log("inside the arrow:", data.val())
+        currentName = data.val()
       })
 
-      console.log("the name", name)
-      const usersRef = adminDatabase.ref(`users/${targetUid}/requests`)
-      usersRef.update({
-        [macIdGiven]: {
-          accepted: false,
-          macId: macIdGiven,
-          requestedBy: req.body.email,
-        },
+      let targetName: string = ""
+
+      await adminDatabase.ref(`users/${targetUid}/name`).once("value", (data: any) => {
+        //console.log("inside the arrow:", data.val())
+        targetName = data.val()
       })
+
+      //      console.log("the name", currentName)
 
       const usersTablesRef = adminDatabase.ref(`users/${currentUserUid}/tables`)
       usersTablesRef.update({
@@ -65,6 +63,14 @@ app.put("/addNewEntry", (req, res) => {
           macId: macIdGiven,
         },
       })
+
+      const usersTablesRefTarget = adminDatabase.ref(`users/${targetUid}/tables`)
+      usersTablesRefTarget.update({
+        [macIdGiven]: {
+          macId: macIdGiven,
+        },
+      })
+
       const tablesRef = adminDatabase.ref(`tables`)
       tablesRef.update({
         [macIdGiven]: {
@@ -72,8 +78,12 @@ app.put("/addNewEntry", (req, res) => {
           usedBy: "",
           users: {
             [currentUserUid]: {
-              name: name,
+              name: currentName,
               uid: currentUserUid,
+            },
+            [targetUid]: {
+              name: targetName,
+              uid: targetUid,
             },
           },
         },
