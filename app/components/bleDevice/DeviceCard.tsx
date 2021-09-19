@@ -12,17 +12,10 @@ interface DeviceCardProps {
 }
 
 const DeviceCard: React.FC<DeviceCardProps> = ({ device, onPress, style }) => {
-  const [isConnected, setIsConnected] = useState(false)
-
-  useEffect(() => {
-    device.isConnected().then(setIsConnected)
-  }, [device])
-
   return (
     <BaseCard style={style} onPress={() => onPress(device)}>
       <Text>{`ID: ${device.id}`}</Text>
       <Text>{`Name: ${device.name}`}</Text>
-      <Text>{`Connected: ${isConnected}`}</Text>
       <Text>{`RSSI: ${device.rssi}`}</Text>
       {device.manufacturerData ? (
         <Text>{`Manufacturer: ${btoa(device.manufacturerData)}`}</Text>

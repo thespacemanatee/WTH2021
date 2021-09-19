@@ -9,7 +9,7 @@ class TableUpdateCallback : public BLECharacteristicCallbacks
 
     if (pCharacteristic == pCoreCharacteristic)
     {
-      Serial.println("Setting table state");
+      // Serial.println("Setting table state");
       setTableState(valPtr);
     }
     else
@@ -28,15 +28,13 @@ class TableUpdateCallback : public BLECharacteristicCallbacks
 
 void setTableState(uint8_t *value)
 {
-  if (value[0] == 0)
+  if (value[0] == 1)
   {
     command_user_1 = 1;
-    pos_user_1 = value[1];
   }
-  else
+  else if (value[1] == 1)
   {
     command_user_2 = 1;
-    pos_user_2 = value[1];
   }
 }
 
@@ -92,7 +90,7 @@ void loop()
     user_1_deployed = 0;
     command_user_1 = 0;
   }
-  if (command_user_2 == 1)
+  else if (command_user_2 == 2)
   {
     for (pos_user_2 = 90; pos_user_2 >= 0; pos_user_2 -= 1)
     { // table 2 down
@@ -103,7 +101,7 @@ void loop()
     user_2_deployed = 1;
     command_user_2 = 0;
   }
-  if (command_user_1 == 2)
+  else if (command_user_1 == 2)
   {
     for (pos_user_1 = 0; pos_user_1 <= 90; pos_user_1 += 1)
     { // table 1 up
@@ -114,7 +112,7 @@ void loop()
     user_1_deployed = 1;
     command_user_1 = 0;
   }
-  if (command_user_2 == 2)
+  else if (command_user_2 == 1)
   {
     for (pos_user_2 = 0; pos_user_2 <= 90; pos_user_2 += 1)
     { // table 1 up

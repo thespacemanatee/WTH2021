@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Alert, StyleSheet, useWindowDimensions, View } from "react-native"
-import { Device } from "react-native-ble-plx"
+import { encode as atob } from "base-64"
 
 import { Button, Screen, Text } from "../../components"
 import ShelfAnimation from "../../components/ShelfAnimation"
 import TableDeployedAnimation from "../../components/TableDeployedAnimation"
+import { useAppSelector } from "../../models/hooks"
 import { getTableUsers } from "../../services/firebase"
 import { color } from "../../theme"
-import {
-  bleManagerRef,
-  decodeBleString,
-  getCoreCharacteristic,
-} from "../../utils/bluetooth/BleHelper"
+import { decodeBleString, getCoreCharacteristic } from "../../utils/bluetooth/BleHelper"
 
 const styles = StyleSheet.create({
   root: {
@@ -28,38 +25,59 @@ const styles = StyleSheet.create({
 })
 
 const TableScreen = ({ route, navigation }) => {
-  const [device, setDevice] = useState<Device>()
+  const currentUser = useAppSelector((state) => state.settings.currentUser)
   const [deployed, setDeployed] = useState(false)
+  const [userNo, setUserNo] = useState(0)
 
   const { macId } = route.params
 
   const { width, height } = useWindowDimensions()
 
-  const handleTableRequest = async () => {
+  const getTableState = useCallback(async () => {
     try {
-      const char = await getCoreCharacteristic(device)
+      let payload
+      const char = await getCoreCharacteristic(macId)
       const decodedBleString = decodeBleString((await char.read())?.value)
-      console.log(decodedBleString.charCodeAt(0))
-      console.log(decodedBleString.charCodeAt(1))
+      console.log(decodedBleString.charCodeAt(0), decodedBleString.charCodeAt(1))
+      if (decodedBleString.charCodeAt(userNo) === 0) {
+        if (userNo === 0) {
+          payload = atob(String.fromCharCode(2, decodedBleString.charCodeAt(1)))
+        } else {
+          payload = atob(String.fromCharCode(decodedBleString.charCodeAt(0), 2))
+        }
+        setDeployed(true)
+      }
+      if (decodedBleString.charCodeAt(userNo) === 1) {
+        if (userNo === 0) {
+          payload = atob(String.fromCharCode(1, decodedBleString.charCodeAt(1)))
+        } else {
+          payload = atob(String.fromCharCode(decodedBleString.charCodeAt(0), 1))
+        }
+        setDeployed(false)
+      }
+      await char?.writeWithResponse(payload)
     } catch (err) {
       Alert.alert("Error", err.message)
     }
+  }, [macId, userNo])
+
+  const connectToDevice = useCallback(async () => {
+    try {
+      const uids = await getTableUsers(macId)
+      const userNumber = uids.indexOf(currentUser.uid)
+      setUserNo(userNumber)
+    } catch (err) {
+      Alert.alert("Error", err.message)
+    }
+  }, [currentUser.uid, macId])
+
+  const handleTableRequest = async () => {
+    await getTableState()
   }
 
   useEffect(() => {
-    const connectToDevice = async () => {
-      try {
-        const device = await bleManagerRef.current?.connectToDevice(macId)
-        const uids = await getTableUsers(device.id)
-        console.log(uids)
-        setDevice(device)
-      } catch (err) {
-        Alert.alert("Error", err.message)
-      }
-    }
-
     connectToDevice()
-  }, [macId])
+  }, [connectToDevice])
 
   return (
     <Screen style={styles.root} preset="scroll">
@@ -73,7 +91,7 @@ const TableScreen = ({ route, navigation }) => {
         )}
       </View>
       <Button
-        text="Deploy Your Table"
+        text={`${deployed ? "Stow" : "Deploy"} Your Table`}
         style={styles.button}
         textStyle={styles.buttonText}
         onPress={handleTableRequest}

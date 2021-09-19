@@ -17,17 +17,26 @@ export const decodeBleString = (value: string | undefined | null): string => {
 }
 
 export const getCoreCharacteristic = async (
-  device: Device,
+  deviceUUID: string,
 ): Promise<Characteristic | undefined> => {
-  return getCharacteristic(CORE_SERVICE_UUID, device, CORE_CHARACTERISTIC_UUID)
+  console.log(deviceUUID)
+  return getCharacteristic(CORE_SERVICE_UUID, deviceUUID, CORE_CHARACTERISTIC_UUID)
 }
 
 const getCharacteristic = async (
   serviceUUID: string,
-  device: Device,
+  deviceUUID: string,
   characteristicUUID: string,
 ): Promise<Characteristic | undefined> => {
   let characteristic: Characteristic | undefined
+  let device: Device | undefined
+  if (!(await bleManagerRef.current?.isDeviceConnected(deviceUUID))) {
+    device = await bleManagerRef.current?.connectToDevice(deviceUUID)
+  } else {
+    device = (await bleManagerRef.current?.connectedDevices([serviceUUID])).find(
+      (e) => e.id === deviceUUID,
+    )
+  }
   if (device) {
     const services = await (await device.discoverAllServicesAndCharacteristics()).services()
     const service = services.find((e) => e.uuid === serviceUUID)

@@ -92,7 +92,7 @@ export const AddTableScreen = ({ route }) => {
       subscription?.remove()
       disconnectDevice()
     }
-  }, [device])
+  }, [device, disconnectDevice])
 
   return (
     <Screen style={styles.root} preset="scroll">
