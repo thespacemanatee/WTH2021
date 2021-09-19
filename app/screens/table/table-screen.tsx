@@ -41,17 +41,17 @@ const TableScreen = ({ route, navigation }) => {
       console.log(decodedBleString.charCodeAt(0), decodedBleString.charCodeAt(1))
       if (decodedBleString.charCodeAt(userNo) === 0) {
         if (userNo === 0) {
-          payload = atob(String.fromCharCode(2, decodedBleString.charCodeAt(1)))
+          payload = atob(String.fromCharCode(2, 0))
         } else {
-          payload = atob(String.fromCharCode(decodedBleString.charCodeAt(0), 2))
+          payload = atob(String.fromCharCode(0, 2))
         }
         setDeployed(true)
       }
       if (decodedBleString.charCodeAt(userNo) === 1) {
         if (userNo === 0) {
-          payload = atob(String.fromCharCode(1, decodedBleString.charCodeAt(1)))
+          payload = atob(String.fromCharCode(1, 0))
         } else {
-          payload = atob(String.fromCharCode(decodedBleString.charCodeAt(0), 1))
+          payload = atob(String.fromCharCode(0, 1))
         }
         setDeployed(false)
       }
@@ -82,6 +82,7 @@ const TableScreen = ({ route, navigation }) => {
   return (
     <Screen style={styles.root} preset="scroll">
       <Text preset="header" text={macId} style={{ fontSize: 36, margin: 16 }} />
+      <Text preset="header" text={`User ${userNo}`} style={{ margin: 16 }} />
       <Text preset="header" text="Your table is currently:" style={{ margin: 16 }} />
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         {!deployed ? (
