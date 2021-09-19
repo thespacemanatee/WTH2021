@@ -21,6 +21,7 @@ import { WorkspaceCard } from "../../components/workspace-card/workspace-card"
 const styles = StyleSheet.create({
   button: {
     margin: 16,
+    height: 56,
   },
   buttonText: {
     fontSize: 16,

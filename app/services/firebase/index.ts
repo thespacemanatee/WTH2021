@@ -74,6 +74,11 @@ export const getWorkspaces = async (uid: string) => {
   return workspaces?.filter((e) => e !== null)
 }
 
+export const getTableUsers = async (macId: string) => {
+  const usersRes = (await database().ref(`/tables/${macId}/users`).once("value")).val()
+  return usersRes && Object.values(usersRes).map((e) => e.uid)
+}
+
 export const checkIfTableRegistered = async (macId: string) => {
   const tableRes = (await database().ref(`/tables/${macId}`).once("value")).val()
 }

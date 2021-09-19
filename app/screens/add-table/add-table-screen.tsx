@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Alert, StyleSheet, View } from "react-native"
 import { Formik } from "formik"
 import * as Yup from "yup"
@@ -17,6 +17,7 @@ const styles = StyleSheet.create({
   },
   button: {
     margin: 16,
+    height: 56,
   },
   buttonText: {
     fontSize: 16,
@@ -25,7 +26,9 @@ const styles = StyleSheet.create({
 
 export const AddTableScreen = ({ route }) => {
   const currentUser = useAppSelector((state) => state.settings.currentUser)
+
   const { device } = route.params
+
   const navigation = useNavigation()
 
   console.log(device.id)
@@ -46,7 +49,7 @@ export const AddTableScreen = ({ route }) => {
       })
       const res = await axios({
         method: "put",
-        url: "",
+        url: "http://128.199.128.54/addNewEntry",
         data: {
           email: values.email,
           macId: device.id,

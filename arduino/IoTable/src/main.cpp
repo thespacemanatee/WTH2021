@@ -1,5 +1,45 @@
 #include <IoTable.h>
 
+/* Callback for updated lighting data written from client */
+class TableUpdateCallback : public BLECharacteristicCallbacks
+{
+  void onWrite(BLECharacteristic *pCharacteristic)
+  {
+    uint8_t *valPtr = pCharacteristic->getData();
+
+    if (pCharacteristic == pCoreCharacteristic)
+    {
+      Serial.println("Setting table state");
+      setTableState(valPtr);
+    }
+    else
+    {
+      Serial.println("No matching characteristic");
+    }
+  }
+
+  void onRead(BLECharacteristic *pCharacteristic)
+  {
+    tableMessage[0] = user_1_deployed;
+    tableMessage[1] = user_2_deployed;
+    pCharacteristic->setValue(*tableMessage);
+  }
+};
+
+void setTableState(uint8_t *value)
+{
+  if (value[0] == 0)
+  {
+    command_user_1 = 1;
+    pos_user_1 = value[1];
+  }
+  else
+  {
+    command_user_2 = 1;
+    pos_user_2 = value[1];
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -20,6 +60,10 @@ void setup()
       CORE_CHARACTERISTIC_UUID,
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_WRITE);
 
+  tableUpdateCallback = new TableUpdateCallback();
+
+  pCoreCharacteristic->setCallbacks(tableUpdateCallback);
+
   myservo1.attach(12); // attaches the servo on pin 9 to the servo object
   myservo2.attach(13); // attaches the servo on pin 10 to the servo object
 
@@ -39,84 +83,89 @@ void loop()
 {
   if (command_user_1 == 1)
   {
-    for (pos_user_1; pos_user_1 >= 0; pos_user_1 -= 1)
+    for (pos_user_1 = 90; pos_user_1 >= 0; pos_user_1 -= 1)
     { // table 1 down
       // in steps of 1 degree
       myservo1.write(pos_user_1); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
+      delay(100);                 // waits 15ms for the servo to reach the position
     }
+    user_1_deployed = 0;
     command_user_1 = 0;
   }
   if (command_user_2 == 1)
   {
-    for (pos_user_2; pos_user_2 >= 0; pos_user_2 -= 1)
+    for (pos_user_2 = 90; pos_user_2 >= 0; pos_user_2 -= 1)
     { // table 2 down
       // in steps of 1 degree
       myservo2.write(pos_user_2); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
+      delay(100);                 // waits 15ms for the servo to reach the position
     }
+    user_2_deployed = 1;
     command_user_2 = 0;
   }
   if (command_user_1 == 2)
   {
-    for (pos_user_1; pos_user_1 <= 90; pos_user_1 += 1)
+    for (pos_user_1 = 0; pos_user_1 <= 90; pos_user_1 += 1)
     { // table 1 up
       // in steps of 1 degree
       myservo1.write(pos_user_1); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
+      delay(100);                 // waits 15ms for the servo to reach the position
     }
+    user_1_deployed = 1;
     command_user_1 = 0;
   }
   if (command_user_2 == 2)
   {
-    for (pos_user_2; pos_user_2 <= 90; pos_user_2 += 1)
+    for (pos_user_2 = 0; pos_user_2 <= 90; pos_user_2 += 1)
     { // table 1 up
       // in steps of 1 degree
       myservo2.write(pos_user_2); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
+      delay(100);                 // waits 15ms for the servo to reach the position
     }
+    user_2_deployed = 0;
     command_user_2 = 0;
   }
-  if (command_user_1 == 3)
-  {
-    for (pos_user_1; pos_user_1 <= 90; pos_user_1 += 1)
-    { // table 2 down
-      // in steps of 1 degree
-      myservo1.write(pos_user_1); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
-    }
-    command_user_1 = 0;
-  }
-  if (command_user_2 == 3)
-  {
-    for (pos_user_2; pos_user_2 <= 90; pos_user_2 += 1)
-    { // table 2 down
-      // in steps of 1 degree
-      myservo2.write(pos_user_2); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
-    }
-    command_user_2 = 0;
-  }
-  if (command_user_1 == 4)
-  {
-    for (pos_user_1; pos_user_1 >= 0; pos_user_1 -= 1)
-    { // table 2 up
-      // in steps of 1 degree
-      myservo2.write(pos_user_1); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
-    }
-    command_user_1 = 0;
-  }
-  if (command_user_2 == 4)
-  {
-    for (pos_user_2; pos_user_2 >= 0; pos_user_2 -= 1)
-    { // table 2 up
-      // in steps of 1 degree
-      myservo2.write(pos_user_2); // tell servo to go to position in variable 'pos_user_1'
-      delay(100);           // waits 15ms for the servo to reach the position
-    }
-    command_user_2 = 0;
-  }
+  // if (command_user_1 == 3)
+  // {
+  //   for (pos_user_1 = 0; pos_user_1 <= 90; pos_user_1 += 1)
+  //   { // table 2 down
+  //     // in steps of 1 degree
+  //     myservo1.write(pos_user_1); // tell servo to go to position in variable 'pos_user_1'
+  //     delay(100);                 // waits 15ms for the servo to reach the position
+  //   }
+  //   user
+  //   command_user_1 = 0;
+  // }
+  // if (command_user_2 == 3)
+  // {
+  //   for (pos_user_2 = 0; pos_user_2 <= 90; pos_user_2 += 1)
+  //   { // table 2 down
+  //     // in steps of 1 degree
+  //     myservo2.write(pos_user_2); // tell servo to go to position in variable 'pos_user_1'
+  //     delay(100);                 // waits 15ms for the servo to reach the position
+  //   }
+  //   command_user_2 = 0;
+  // }
+  // if (command_user_1 == 4)
+  // {
+  //   for (pos_user_1 = 90; pos_user_1 >= 0; pos_user_1 -= 1)
+  //   { // table 2 up
+  //     // in steps of 1 degree
+  //     myservo2.write(pos_user_1); // tell servo to go to position in variable 'pos_user_1'
+  //     delay(100);                 // waits 15ms for the servo to reach the position
+  //   }
+  //   command_user_1 = 0;
+  // }
+  // if (command_user_2 == 4)
+  // {
+  //   for (pos_user_2 = 90; pos_user_2 >= 0; pos_user_2 -= 1)
+  //   { // table 2 up
+  //     // in steps of 1 degree
+  //     myservo2.write(pos_user_2); // tell servo to go to position in variable 'pos_user_1'
+  //     delay(100);                 // waits 15ms for the servo to reach the position
+  //   }
+  //   command_user_2 = 0;
+  // }
 
   // disconnecting
   if (!deviceConnected && oldDeviceConnected)
