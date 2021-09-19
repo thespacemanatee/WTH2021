@@ -38,7 +38,6 @@ const TableScreen = ({ route, navigation }) => {
       let payload
       const char = await getCoreCharacteristic(macId)
       const decodedBleString = decodeBleString((await char.read())?.value)
-      console.log(decodedBleString.charCodeAt(0), decodedBleString.charCodeAt(1))
       if (decodedBleString.charCodeAt(userNo) === 0) {
         if (userNo === 0) {
           payload = atob(String.fromCharCode(2, 0))
@@ -47,7 +46,7 @@ const TableScreen = ({ route, navigation }) => {
         }
         setDeployed(true)
       }
-      if (decodedBleString.charCodeAt(userNo) === 1) {
+      else if (decodedBleString.charCodeAt(userNo) === 1) {
         if (userNo === 0) {
           payload = atob(String.fromCharCode(1, 0))
         } else {
@@ -55,6 +54,9 @@ const TableScreen = ({ route, navigation }) => {
         }
         setDeployed(false)
       }
+      console.log(decodedBleString.charCodeAt(0), decodedBleString.charCodeAt(1))
+      console.log(decodeBleString((await char.read())?.value).charCodeAt(0))
+      console.log(decodeBleString((await char.read())?.value).charCodeAt(1))
       await char?.writeWithResponse(payload)
     } catch (err) {
       Alert.alert("Error", err.message)
@@ -65,7 +67,7 @@ const TableScreen = ({ route, navigation }) => {
     try {
       const uids = await getTableUsers(macId)
       const userNumber = uids.indexOf(currentUser.uid)
-      setUserNo(userNumber)
+      setUserNo(1)
     } catch (err) {
       Alert.alert("Error", err.message)
     }

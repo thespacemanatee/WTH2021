@@ -111,7 +111,7 @@ void loop()
   }
   else if (command_user_1 == 2)
   {
-    while (pos_user_1 < 90)
+    while (pos_user_1 < 85)
     {
       pos_user_1++;
       myservo1.write(pos_user_1); // tell servo to go to position in variable 'pos_user_1'
@@ -122,7 +122,7 @@ void loop()
   }
   else if (command_user_2 == 1)
   {
-    while (pos_user_2 < 90)
+    while (pos_user_2 < 85)
     {
       pos_user_2++;
       myservo2.write(pos_user_2); // tell servo to go to position in variable 'pos_user_1'
@@ -131,6 +131,8 @@ void loop()
     command_user_2 = 0;
     user_2_deployed = 0;
   }
+
+  delay(1500);
 
   // disconnecting
   if (!deviceConnected && oldDeviceConnected)

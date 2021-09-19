@@ -24,7 +24,7 @@ Servo myservo1, myservo2; // create servo object to control a servo
                           // twelve servo objects can be created on most boards
 
 uint16_t tableMessage[2];
-uint8_t pos_user_1 = 90;     // variable to store the servo position
+uint8_t pos_user_1 = 85;     // variable to store the servo position
 uint8_t pos_user_2 = 0;     // variable to store the servo position
 uint8_t command_user_1 = 0; //1:table 1 down, 2:table 1 up, 3:table 2 down, 4:table 2 up
 uint8_t command_user_2 = 0; //1:table 1 down, 2:table 1 up, 3:table 2 down, 4:table 2 up
